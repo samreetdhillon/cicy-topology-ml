@@ -22,6 +22,7 @@ from src.models.cnn_model import CICYClassifier
 BATCH_SIZE = 32
 EPOCHS = 50
 LR = 1e-3
+LAMBDA_H21 = 1.2
 TRAIN_SPLIT = 0.8
 SEED = 42
 
@@ -82,7 +83,8 @@ for epoch in range(EPOCHS):
         loss_h11 = criterion(out_h11, batch_y[:, 0])
         loss_h21 = criterion(out_h21, batch_y[:, 1])
 
-        loss = loss_h11 + loss_h21
+        # loss = loss_h11 + loss_h21
+        loss = loss_h11 + (LAMBDA_H21 * loss_h21)
         loss.backward()
         optimizer.step()
 

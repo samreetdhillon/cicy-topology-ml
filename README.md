@@ -92,11 +92,11 @@ The plots show scatter distributions of predicted vs. actual h^{1,1} and h^{2,1}
 
 ```
 Total manifolds evaluated : 7890
-h^{1,1} exact accuracy     : 96.22%
-h^{2,1} exact accuracy     : 75.87%
+h^{1,1} exact accuracy     : 96.67%
+h^{2,1} exact accuracy     : 76.51%
 ```
 
-The model achieves high accuracy on h^{1,1} prediction (96.22%) and demonstrates substantial learning on h^{2,1} (75.87%), indicating strong predictive capability for topological properties of CICY 3-folds.
+The model achieves high accuracy on h^{1,1} prediction (96.67%) and demonstrates substantial learning on h^{2,1} (76.51%), indicating strong predictive capability for topological properties of CICY 3-folds.
 
 ## Common issues
 
