@@ -1,62 +1,102 @@
-'''
+"""
 Enhanced Training Script for CICY Classification
-'''
+Trains a CNN with scalar geometric features.
+"""
 
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import torch
-import torch.optim as optim
 import torch.nn as nn
+import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset, random_split
 import numpy as np
 
-# Load \new enhanced data
-X_enhanced = np.load('data/processed/X_enhanced.npy').astype(np.float32)
-y = np.load('data/processed/y_hodge.npy').astype(np.float32)
+from src.models.cnn_model import CICYClassifier
 
-# X_enhanced contains: [Flat Matrix (180 values) | Ambient Dim (1 value)]
+
+# -----------------------------
+# Configuration
+# -----------------------------
+BATCH_SIZE = 32
+EPOCHS = 50
+LR = 1e-3
+TRAIN_SPLIT = 0.8
+SEED = 42
+
+torch.manual_seed(SEED)
+np.random.seed(SEED)
+
+
+# -----------------------------
+# Load enhanced dataset
+# -----------------------------
+X_enhanced = np.load("data/processed/X_enhanced.npy").astype(np.float32)
+y = np.load("data/processed/y_hodge.npy").astype(np.int64)
+
+# Split enhanced input
 X_img = X_enhanced[:, :180].reshape(-1, 1, 12, 15)
-X_scalar = X_enhanced[:, 180:] # The last column
+X_scalar = X_enhanced[:, 180:]  # scalar geometric features
 
-# Convert to Tensors
+# Convert to tensors
 dataset = TensorDataset(
-    torch.from_numpy(X_img), 
-    torch.from_numpy(X_scalar), 
-    torch.from_numpy(y).long()
+    torch.from_numpy(X_img),
+    torch.from_numpy(X_scalar),
+    torch.from_numpy(y)
 )
 
-train_size = int(0.8 * len(dataset))
+# -----------------------------
+# Train / Test split
+# -----------------------------
+train_size = int(TRAIN_SPLIT * len(dataset))
 test_size = len(dataset) - train_size
 train_set, test_set = random_split(dataset, [train_size, test_size])
 
-train_loader = DataLoader(train_set, batch_size=32, shuffle=True)
-test_loader = DataLoader(test_set, batch_size=32)
+train_loader = DataLoader(train_set, batch_size=BATCH_SIZE, shuffle=True)
+test_loader = DataLoader(test_set, batch_size=BATCH_SIZE, shuffle=False)
 
-# 3. Initialize Model, Loss, and Optimizer
-from src.models.cnn_model import CICYClassifier
+
+# -----------------------------
+# Model, loss, optimizer
+# -----------------------------
 model = CICYClassifier()
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=LR)
 
-# 4. Training Loop
-print("Starting Training...")
-for epoch in range(50):
+
+# -----------------------------
+# Training loop
+# -----------------------------
+print("Starting training...\n")
+
+for epoch in range(EPOCHS):
     model.train()
-    total_loss = 0
+    running_loss = 0.0
+
     for batch_img, batch_scalar, batch_y in train_loader:
         optimizer.zero_grad()
-        outputs = model(batch_img, batch_scalar) # Pass both inputs
-        # Assuming outputs is a tuple (h11_output, h21_output)
-        loss = criterion(outputs[0], batch_y[:, 0].long()) + criterion(outputs[1], batch_y[:, 1].long())
+
+        out_h11, out_h21 = model(batch_img, batch_scalar)
+
+        loss_h11 = criterion(out_h11, batch_y[:, 0])
+        loss_h21 = criterion(out_h21, batch_y[:, 1])
+
+        loss = loss_h11 + loss_h21
         loss.backward()
         optimizer.step()
-        total_loss += loss.item()
-    
-    if (epoch+1) % 10 == 0:
-        print(f"Epoch [{epoch+1}/50], Loss: {total_loss/len(train_loader):.4f}")
 
-# 5. Save the Model
-torch.save(model.state_dict(), 'models/cicy_cnn_v1.pt')
+        running_loss += loss.item()
+
+    if (epoch + 1) % 10 == 0 or epoch == 0:
+        avg_loss = running_loss / len(train_loader)
+        print(f"Epoch [{epoch+1:02d}/{EPOCHS}] | Loss: {avg_loss:.4f}")
+
+# -----------------------------
+# Save model
+# -----------------------------
+os.makedirs("models", exist_ok=True)
+torch.save(model.state_dict(), "models/cicy_cnn_v1.pt")
+
+print("\nTraining complete.")
 print("Model saved to models/cicy_cnn_v1.pt")

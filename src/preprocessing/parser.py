@@ -1,65 +1,82 @@
-'''
-Functions to parse the raw CICY 3-fold data from text files,
-extract the configuration matrices and Hodge numbers,
-and prepare them for ML models.
-'''
+"""
+Parses the CICY raw text file into:
+- X : padded configuration matrices (N, 12, 15)
+- y : Hodge numbers (N, 2) → [h11, h21]
+"""
+
 import numpy as np
 import re
-import os
+from pathlib import Path
 
-def parse_cicy3_file(filepath):
-    with open(filepath, 'r') as f:
+RAW_FILE = "data/raw/cicy3folds.txt"
+OUT_X = "data/processed/X.npy"
+OUT_Y = "data/processed/y_hodge.npy"
+
+MAX_PS = 12
+MAX_POL = 15
+
+
+def parse_int_list(line):
+    """Extract integers from a line like {1, 2, 3}"""
+    return list(map(int, re.findall(r"-?\d+", line)))
+
+
+def main():
+    with open(RAW_FILE, "r") as f:
         lines = f.readlines()
 
-    all_matrices = []
-    all_hodge = []
-    
-    current_matrix = []
-    current_h11 = None
-    current_h21 = None
+    X = []
+    y = []
 
-    for line in lines:
-        line = line.strip()
-        
-        # 1. Extract Hodge Numbers
-        if line.startswith('H11'):
-            current_h11 = int(line.split(':')[-1])
-        if line.startswith('H21'):
-            current_h21 = int(line.split(':')[-1])
-            
-        # 2. Extract Matrix Rows (lines starting with '{')
-        # Ignore the 'C2' and 'Redun' lines which also use braces
-        if line.startswith('{') and not any(x in line for x in ['C2', 'Redun']):
-            # Convert "{1, 1, 0...}" to [1, 1, 0...]
-            row = [int(x) for x in re.findall(r'\d+', line)]
-            current_matrix.append(row)
-            
-        # 3. Detect end of entry (empty line) and save
-        if line == "" and current_matrix:
-            all_matrices.append(current_matrix)
-            all_hodge.append([current_h11, current_h21])
-            # Reset for next entry
-            current_matrix = []
-            current_h11, current_h21 = None, None
+    i = 0
+    n = len(lines)
 
-    return all_matrices, np.array(all_hodge)
+    while i < n:
+        line = lines[i].strip()
 
-def pad_matrices(matrices, max_rows=12, max_cols=15):
-    """
-    CNNs need fixed input sizes. We pad smaller matrices with zeros.
-    """
-    padded_X = np.zeros((len(matrices), max_rows, max_cols))
-    for i, mat in enumerate(matrices):
-        m = np.array(mat)
-        r, c = m.shape
-        padded_X[i, :r, :c] = m
-    return padded_X
+        # Start of a new manifold block
+        if line.startswith("Num"):
+            # --- Read header ---
+            numps = int(lines[i + 1].split(":")[1])
+            numpol = int(lines[i + 2].split(":")[1])
+            h11 = int(lines[i + 4].split(":")[1])
+            h21 = int(lines[i + 5].split(":")[1])
+
+            # --- Skip to matrix ---
+            matrix_start = i + 8
+            matrix = []
+
+            for r in range(numps):
+                row = parse_int_list(lines[matrix_start + r])
+                matrix.append(row)
+
+            matrix = np.array(matrix, dtype=np.float32)
+
+            # --- Pad to (12, 15) ---
+            padded = np.zeros((MAX_PS, MAX_POL), dtype=np.float32)
+            padded[:matrix.shape[0], :matrix.shape[1]] = matrix
+
+            X.append(padded)
+            y.append([h11, h21])
+
+            # Move index forward
+            i = matrix_start + numps
+        else:
+            i += 1
+
+    X = np.array(X, dtype=np.float32)
+    y = np.array(y, dtype=np.int64)
+
+    print(f"Processed {len(X)} CICY 3-folds")
+    print(f"X shape      : {X.shape}")
+    print(f"Hodge shape  : {y.shape}")
+    print(f"Unique h11   : {len(np.unique(y[:,0]))}")
+    print(f"Unique h21   : {len(np.unique(y[:,1]))}")
+
+    Path("data/processed").mkdir(parents=True, exist_ok=True)
+    np.save(OUT_X, X)
+    np.save(OUT_Y, y)
+
 
 if __name__ == "__main__":
-    raw_path = 'data/raw/cicy3folds.txt'
-    mats, hodge = parse_cicy3_file(raw_path)
-    X = pad_matrices(mats)
-    
-    np.save('data/processed/X_cicy3.npy', X)
-    np.save('data/processed/y_hodge.npy', hodge)
-    print(f"Successfully processed {len(X)} manifolds.")
+    main()

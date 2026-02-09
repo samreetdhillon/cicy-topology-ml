@@ -26,24 +26,47 @@ A PyTorch project for predicting topological quantities (Hodge numbers) from CIC
    ```
 
 3. Prepare data
-   - Place raw data under `data/raw/` as appropriate. Processed arrays used by the training script are expected at `data/processed/X_cicy3.npy` and `data/processed/y_hodge.npy`.
+
+   ```powershell
+   # Parse raw data
+   python src/preprocessing/parser.py
+
+   # Enhance dataset with scalar geometric features
+   python src/preprocessing/enhance.py
+
+   # Verify processed data
+   python check.py
+   ```
+
+   Expected files:
+   - `data/processed/X_cicy3.npy` — raw configuration matrices
+   - `data/processed/X_enhanced.npy` — enhanced feature set used by training
+   - `data/processed/y_hodge.npy` — target Hodge numbers
 
 4. Run training
 
    ```powershell
-   python src\train.py
+   python src\train_enhanced.py
    ```
 
 ## Project structure
 
-- `src/preprocessing/parser.py` — an optional scripts to parse and preprocess raw dataset into NumPy arrays
-- `src/train.py` — main training script (loads `data/processed/*.npy`, creates dataloaders, trains model, saves weights to `models/`)
-- `src/models/cnn_model.py` — model definition used by the trainer
+- `src/preprocessing/parser.py` — parses raw CICY 3-fold data from text into NumPy arrays
+- `src/preprocessing/enhance.py` — adds scalar geometric features to the dataset
+- `src/train_enhanced.py` — main training script (loads enhanced data, creates dataloaders, trains model with dual Hodge outputs)
+- `src/models/cnn_model.py` — dual-head CNN classifier for predicting h^{1,1} and h^{2,1}
+- `src/eval.py` — evaluation script that runs inference and plots predicted vs actual Hodge numbers
+- `src/accuracy.py` — computes exact classification accuracy on all samples
+- `src/error_analysis.py` — identifies worst misclassified manifolds and visualizes their configuration matrices
+- `check.py` — sanity checks for processed data (reports label ranges and cardinalities)
 
 ## Data format
 
-- `X_cicy3.npy`: float32 array of input features (shape should match model input)
-- `y_hodge.npy`: float32 array of target values (Hodge numbers)
+- `X_cicy3.npy`: float32 array of CICY configuration matrices (shape: N × 12 × 15)
+- `X_enhanced.npy`: float32 array combining flattened matrices with scalar geometric features (shape: N × 181)
+  - First 180 features: flattened 12×15 configuration matrix
+  - Last feature: ambient factor count (number of non-zero rows)
+- `y_hodge.npy`: int64 array of Hodge numbers (shape: N × 2) → [h^{1,1}, h^{2,1}]
 
 ## Saving and loading models
 
@@ -51,16 +74,34 @@ A PyTorch project for predicting topological quantities (Hodge numbers) from CIC
 - To load weights in code:
 
 ```python
-from src.models.cnn_model import CICYCNN
-model = CICYCNN()
-model.load_state_dict(torch.load('models/cicy_cnn_v1.pt'))
+from src.models.cnn_model import CICYClassifier
+model = CICYClassifier()
+model.load_state_dict(torch.load('models/cicy_cnn_v1.pt', map_location='cpu'))
 model.eval()
 ```
+
+## Results
+
+Below is a visualization of model predictions vs. actual Hodge numbers:
+
+![Model Predictions](plots/results_v1.png)
+
+The plots show scatter distributions of predicted vs. actual h^{1,1} and h^{2,1} values, with the red dashed line indicating perfect predictions.
+
+### Model Performance
+
+```
+Total manifolds evaluated : 7890
+h^{1,1} exact accuracy     : 96.22%
+h^{2,1} exact accuracy     : 75.87%
+```
+
+The model achieves high accuracy on h^{1,1} prediction (96.22%) and demonstrates substantial learning on h^{2,1} (75.87%), indicating strong predictive capability for topological properties of CICY 3-folds.
 
 ## Common issues
 
 - **Module import errors**: ensure you run commands from the project root or use an editable install.
-- **Missing data files\*\***: ensure `data/processed/X_cicy3.npy` and `data/processed/y_hodge.npy` exist prior to running training.
+- **Missing data files**: ensure data preparation steps are complete, especially `data/processed/X_enhanced.npy` and `data/processed/y_hodge.npy` before running training.
 
 ## Contributing
 
@@ -68,6 +109,8 @@ PRs are welcome. Open issues for bugs or feature requests. Include reproducible 
 
 ## Contact
 
-Samreet Singh Dhillon, \
+```
+Samreet Singh Dhillon,
 M.Sc. Physics, Panjab Univerity
 samreetsinghdhillon@gmail.com
+```

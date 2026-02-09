@@ -1,8 +1,8 @@
-'''
+"""
 Evaluation script for the CICY CNN model.
-Loads the test data and the trained model, runs inference,
-and plots the predicted vs actual Hodge numbers.
-'''
+Loads the trained model, runs inference,
+and plots predicted vs actual Hodge numbers.
+"""
 
 import sys
 import os
@@ -13,45 +13,69 @@ import numpy as np
 import matplotlib.pyplot as plt
 from src.models.cnn_model import CICYClassifier
 
-# 1. Load Data and Model
-X_test = np.load('data/processed/X_enhanced.npy').astype(np.float32)    
-y_test = np.load('data/processed/y_hodge.npy').astype(np.float32)
 
+# -----------------------------
+# Load data
+# -----------------------------
+X_enhanced = np.load("data/processed/X_enhanced.npy").astype(np.float32)
+y_actual = np.load("data/processed/y_hodge.npy").astype(np.int64)
+
+X_img = X_enhanced[:, :180].reshape(-1, 1, 12, 15)
+X_scalar = X_enhanced[:, 180:]
+
+
+# -----------------------------
+# Load model
+# -----------------------------
 model = CICYClassifier()
-model.load_state_dict(torch.load('models/cicy_cnn_v1.pt'))
+model.load_state_dict(torch.load("models/cicy_cnn_v1.pt", map_location="cpu"))
 model.eval()
 
 
-# 2. Run Inference
+# -----------------------------
+# Inference
+# -----------------------------
 with torch.no_grad():
-    # Split the enhanced data back into image and scalar
-    img_tensor = torch.from_numpy(X_test[:, :180].reshape(-1, 1, 12, 15))
-    scalar_tensor = torch.from_numpy(X_test[:, 180:])
-    
-    # Get raw logit outputs from the two heads
+    img_tensor = torch.from_numpy(X_img)
+    scalar_tensor = torch.from_numpy(X_scalar)
+
     out_h11, out_h21 = model(img_tensor, scalar_tensor)
-    
-    # Use argmax to get the predicted class index (the Hodge number)
+
     pred_h11 = torch.argmax(out_h11, dim=1).numpy()
     pred_h21 = torch.argmax(out_h21, dim=1).numpy()
 
-# 3. Plotting for h11 and h21
+
+# -----------------------------
+# Plot results
+# -----------------------------
+os.makedirs("plots", exist_ok=True)
+
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
 
-# Plot h11
-ax1.scatter(y_test[:, 0], pred_h11, alpha=0.3, color='blue')
-ax1.plot([y_test[:, 0].min(), y_test[:, 0].max()], [y_test[:, 0].min(), y_test[:, 0].max()], 'r--')
-ax1.set_title('$h^{1,1}$ Prediction')
-ax1.set_xlabel('Actual')
-ax1.set_ylabel('Predicted')
+# h^{1,1}
+ax1.scatter(y_actual[:, 0], pred_h11, alpha=0.3)
+ax1.plot(
+    [y_actual[:, 0].min(), y_actual[:, 0].max()],
+    [y_actual[:, 0].min(), y_actual[:, 0].max()],
+    "r--"
+)
+ax1.set_title(r"$h^{1,1}$ Prediction")
+ax1.set_xlabel("Actual")
+ax1.set_ylabel("Predicted")
 
-# Plot h21
-ax2.scatter(y_test[:, 1], pred_h21, alpha=0.3, color='green')
-ax2.plot([y_test[:, 1].min(), y_test[:, 1].max()], [y_test[:, 1].min(), y_test[:, 1].max()], 'r--')
-ax2.set_title('$h^{2,1}$ Prediction')
-ax2.set_xlabel('Actual')
-ax2.set_ylabel('Predicted')
+# h^{2,1}
+ax2.scatter(y_actual[:, 1], pred_h21, alpha=0.3)
+ax2.plot(
+    [y_actual[:, 1].min(), y_actual[:, 1].max()],
+    [y_actual[:, 1].min(), y_actual[:, 1].max()],
+    "r--"
+)
+ax2.set_title(r"$h^{2,1}$ Prediction")
+ax2.set_xlabel("Actual")
+ax2.set_ylabel("Predicted")
 
 plt.tight_layout()
-plt.savefig('plots/results_v1.png')
+plt.savefig("plots/results_v1.png", dpi=150)
 plt.show()
+
+print("Evaluation complete. Plot saved to plots/results_v1.png")

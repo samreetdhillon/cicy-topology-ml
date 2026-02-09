@@ -1,24 +1,44 @@
-'''
-Enhance the dataset by adding a new feature: the sum of ambient dimensions for each manifold.
-This feature captures the complexity of the ambient space in which the manifold is embedded,
-which may correlate with the Hodge numbers.
-'''
+"""
+Enhance the dataset by adding scalar geometric features
+derived from the CICY configuration matrix.
+
+Currently added feature:
+- Ambient factor count (number of non-zero rows)
+"""
 
 import numpy as np
+import os
 
-# Load raw X and y
-X = np.load('data/processed/X_cicy3.npy')
-y = np.load('data/processed/y_hodge.npy')
 
-# Calculate the ambient dimension for each manifold
-# In CICY, this is the sum of the projective space dimensions
-# For our padded matrix, it's roughly the sum of non-zero rows
-amb_dim = np.sum(X > 0, axis=(1, 2)) 
+def compute_ambient_factor_count(X):
+    """
+    Number of projective space factors in the ambient space.
+    This equals the number of non-zero rows in the CICY matrix.
+    """
+    # Row is non-zero if any entry in that row is non-zero
+    return np.sum(np.any(X != 0, axis=2), axis=1)
 
-# Flatten X and append this new feature
-X_flat = X.reshape(len(X), -1)
-X_enhanced = np.hstack((X_flat, amb_dim.reshape(-1, 1)))
 
-# Save the enhanced dataset
-np.save('data/processed/X_enhanced.npy', X_enhanced)
-print("Enhanced dataset created with Ambient Dimension feature!")
+if __name__ == "__main__":
+    in_dir = "data/processed"
+    out_dir = "data/processed"
+
+    X = np.load(os.path.join(in_dir, "X_cicy3.npy")).astype(np.float32)
+    y = np.load(os.path.join(in_dir, "y_hodge.npy"))
+
+    # -----------------------------
+    # Compute scalar feature(s)
+    # -----------------------------
+    ambient_factors = compute_ambient_factor_count(X).reshape(-1, 1)
+
+    # -----------------------------
+    # Flatten matrix + append scalar
+    # -----------------------------
+    X_flat = X.reshape(len(X), -1)
+    X_enhanced = np.hstack([X_flat, ambient_factors]).astype(np.float32)
+
+    np.save(os.path.join(out_dir, "X_enhanced.npy"), X_enhanced)
+
+    print("Enhanced dataset created")
+    print(f"X_enhanced shape: {X_enhanced.shape}")
+    print("Added scalar features: [ambient_factor_count]")

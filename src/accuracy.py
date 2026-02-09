@@ -1,6 +1,6 @@
-'''
-Evaluates the accuracy of the trained CICY CNN model on test data.
-'''
+"""
+Evaluates exact classification accuracy of the trained CICY CNN model.
+"""
 
 import sys
 import os
@@ -10,40 +10,63 @@ import torch
 import numpy as np
 from src.models.cnn_model import CICYClassifier
 
-# 1. Load data and model
-X_test_all = np.load('data/processed/X_enhanced.npy').astype(np.float32)
-y_actual = np.load('data/processed/y_hodge.npy').astype(np.float32)
 
+# -----------------------------
+# Load data
+# -----------------------------
+X_enhanced = np.load("data/processed/X_enhanced.npy").astype(np.float32)
+y_actual = np.load("data/processed/y_hodge.npy").astype(np.int64)
+
+X_img = X_enhanced[:, :180].reshape(-1, 1, 12, 15)
+X_scalar = X_enhanced[:, 180:]
+
+
+# -----------------------------
+# Load model
+# -----------------------------
 model = CICYClassifier()
-model.load_state_dict(torch.load('models/cicy_cnn_v1.pt'))
+model.load_state_dict(
+    torch.load("models/cicy_cnn_v1.pt", map_location="cpu")
+)
 model.eval()
 
-# 2. Predict using Argmax
+
+# -----------------------------
+# Prediction
+# -----------------------------
 with torch.no_grad():
-    # Split the enhanced data back into image and scalar
-    X_img = torch.from_numpy(X_test_all[:, :180].reshape(-1, 1, 12, 15))
-    X_scalar = torch.from_numpy(X_test_all[:, 180:])
-    
-    # Get raw logit outputs from the two heads
-    out_h11, out_h21 = model(X_img, X_scalar)
-    
-    # Pick the index with the highest score (the predicted Hodge number)
+    img_tensor = torch.from_numpy(X_img)
+    scalar_tensor = torch.from_numpy(X_scalar)
+
+    out_h11, out_h21 = model(img_tensor, scalar_tensor)
+
     pred_h11 = torch.argmax(out_h11, dim=1).numpy()
     pred_h21 = torch.argmax(out_h21, dim=1).numpy()
 
-# 3. Calculate Exact Accuracy
+
+# -----------------------------
+# Exact accuracy
+# -----------------------------
+true_h11 = y_actual[:, 0]
+true_h21 = y_actual[:, 1]
+
 total = len(y_actual)
-correct_h11 = (pred_h11 == y_actual[:, 0]).sum()
-correct_h21 = (pred_h21 == y_actual[:, 1]).sum()
 
-print("-" * 30)
-print(f"Total Manifolds Tested: {total}")
-print(f"h1,1 Exact Accuracy: {100 * correct_h11 / total:.2f}%")
-print(f"h2,1 Exact Accuracy: {100 * correct_h21 / total:.2f}%")
-print("-" * 30)
+acc_h11 = np.mean(pred_h11 == true_h11) * 100
+acc_h21 = np.mean(pred_h21 == true_h21) * 100
 
-# 4. Success Check
-if (100 * correct_h11 / total) > 90:
-    print("STATUS: h1,1 Prediction is PhD-level ready!")
-if (100 * correct_h21 / total) > 50:
-    print("STATUS: h2,1 Prediction is significantly improved!")
+
+print("-" * 40)
+print(f"Total manifolds evaluated : {total}")
+print(f"h^{1,1} exact accuracy     : {acc_h11:.2f}%")
+print(f"h^{2,1} exact accuracy     : {acc_h21:.2f}%")
+print("-" * 40)
+
+
+# -----------------------------
+# Interpretation (report-friendly)
+# -----------------------------
+if acc_h11 > 90:
+    print("STATUS: h^{1,1} prediction is highly reliable.")
+if acc_h21 > 50:
+    print("STATUS: h^{2,1} prediction shows non-trivial learning.")
