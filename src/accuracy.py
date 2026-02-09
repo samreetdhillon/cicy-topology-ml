@@ -1,3 +1,7 @@
+'''
+Evaluates the accuracy of the trained CICY CNN model on test data.
+'''
+
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -7,7 +11,6 @@ import numpy as np
 from src.models.cnn_model import CICYClassifier
 
 # 1. Load data and model
-# Ensure we are using X_enhanced for the 181-feature input
 X_test_all = np.load('data/processed/X_enhanced.npy').astype(np.float32)
 y_actual = np.load('data/processed/y_hodge.npy').astype(np.float32)
 

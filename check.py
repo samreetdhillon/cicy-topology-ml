@@ -1,3 +1,8 @@
+'''
+This script checks the processed data for any issues,
+such as missing values or unexpected ranges.
+'''
+
 import numpy as np
 
 y = np.load('data/processed/y_hodge.npy')

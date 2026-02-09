@@ -29,3 +29,6 @@ dist/
 
 # dotenv
 .env
+
+# others
+initialize.py

@@ -1,3 +1,9 @@
+'''
+Evaluation script for the CICY CNN model.
+Loads the test data and the trained model, runs inference,
+and plots the predicted vs actual Hodge numbers.
+'''
+
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -6,6 +12,7 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from src.models.cnn_model import CICYClassifier
+
 # 1. Load Data and Model
 X_test = np.load('data/processed/X_enhanced.npy').astype(np.float32)    
 y_test = np.load('data/processed/y_hodge.npy').astype(np.float32)

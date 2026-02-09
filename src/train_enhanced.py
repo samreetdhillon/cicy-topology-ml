@@ -1,3 +1,7 @@
+'''
+Enhanced Training Script for CICY Classification
+'''
+
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -8,8 +12,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset, random_split
 import numpy as np
 
-
-# Load your new enhanced data
+# Load \new enhanced data
 X_enhanced = np.load('data/processed/X_enhanced.npy').astype(np.float32)
 y = np.load('data/processed/y_hodge.npy').astype(np.float32)
 
@@ -35,7 +38,6 @@ test_loader = DataLoader(test_set, batch_size=32)
 from src.models.cnn_model import CICYClassifier
 model = CICYClassifier()
 criterion = nn.CrossEntropyLoss()
-# criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # 4. Training Loop

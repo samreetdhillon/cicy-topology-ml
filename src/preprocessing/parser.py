@@ -1,3 +1,8 @@
+'''
+Functions to parse the raw CICY 3-fold data from text files,
+extract the configuration matrices and Hodge numbers,
+and prepare them for ML models.
+'''
 import numpy as np
 import re
 import os
@@ -23,7 +28,7 @@ def parse_cicy3_file(filepath):
             current_h21 = int(line.split(':')[-1])
             
         # 2. Extract Matrix Rows (lines starting with '{')
-        # We ignore the 'C2' and 'Redun' lines which also use braces
+        # Ignore the 'C2' and 'Redun' lines which also use braces
         if line.startswith('{') and not any(x in line for x in ['C2', 'Redun']):
             # Convert "{1, 1, 0...}" to [1, 1, 0...]
             row = [int(x) for x in re.findall(r'\d+', line)]

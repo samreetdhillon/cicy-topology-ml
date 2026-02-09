@@ -36,13 +36,9 @@ A PyTorch project for predicting topological quantities (Hodge numbers) from CIC
 
 ## Project structure
 
+- `src/preprocessing/parser.py` — an optional scripts to parse and preprocess raw dataset into NumPy arrays
 - `src/train.py` — main training script (loads `data/processed/*.npy`, creates dataloaders, trains model, saves weights to `models/`)
 - `src/models/cnn_model.py` — model definition used by the trainer
-- `src/preprocessing/parser.py` — (optional) scripts to parse and preprocess raw dataset into NumPy arrays
-
-## Configuration
-
-- Hyperparameters (batch size, learning rate, epochs) are currently defined in `src/train.py`. For experiments, consider refactoring to use a config file or CLI arguments.
 
 ## Data format
 
@@ -61,31 +57,17 @@ model.load_state_dict(torch.load('models/cicy_cnn_v1.pt'))
 model.eval()
 ```
 
-## Development notes
-
-- When running `python src/train.py` from the project root, imports use the `src` package; the trainer script adds the project root to `sys.path` to facilitate imports. Consider installing the package in editable mode during development:
-
-```powershell
-pip install -e .
-```
-
 ## Common issues
 
-- Module import errors: ensure you run commands from the project root or use an editable install.
-- Missing data files: ensure `data/processed/X_cicy3.npy` and `data/processed/y_hodge.npy` exist prior to running training.
+- **Module import errors**: ensure you run commands from the project root or use an editable install.
+- **Missing data files\*\***: ensure `data/processed/X_cicy3.npy` and `data/processed/y_hodge.npy` exist prior to running training.
 
 ## Contributing
 
 PRs are welcome. Open issues for bugs or feature requests. Include reproducible steps and small, focused changes.
 
-## License
-
-Specify a license for the project by adding a `LICENSE` file. If none is present, contact the maintainer for guidance.
-
 ## Contact
 
-Project owner: Samreet (local repository). Add contact details here if you want collaborators to reach you.
-
-# CICY Topology ML
-
-Predicting Hodge numbers using deep learning.
+Samreet Singh Dhillon, \
+M.Sc. Physics, Panjab Univerity
+samreetsinghdhillon@gmail.com

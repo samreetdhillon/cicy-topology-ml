@@ -1,3 +1,8 @@
+'''
+Performs error analysis on the trained CICY CNN model to identify which manifolds
+are most frequently misclassified in terms of their h2,1 Hodge number.
+'''
+
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))

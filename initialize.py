@@ -1,3 +1,7 @@
+'''
+Script to initialize the project structure (folders and files).
+'''
+
 import os
 
 def create_structure():
