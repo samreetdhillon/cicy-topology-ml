@@ -13,28 +13,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 from src.models.cnn_model import CICYClassifier
 
-
-# -----------------------------
 # Load data
-# -----------------------------
 X_enhanced = np.load("data/processed/X_enhanced.npy").astype(np.float32)
 y_actual = np.load("data/processed/y_hodge.npy").astype(np.int64)
 
 X_img = X_enhanced[:, :180].reshape(-1, 1, 12, 15)
 X_scalar = X_enhanced[:, 180:]
 
-
-# -----------------------------
 # Load model
-# -----------------------------
 model = CICYClassifier()
 model.load_state_dict(torch.load("models/cicy_cnn_v1.pt", map_location="cpu"))
 model.eval()
 
-
-# -----------------------------
 # Inference
-# -----------------------------
 with torch.no_grad():
     img_tensor = torch.from_numpy(X_img)
     scalar_tensor = torch.from_numpy(X_scalar)
@@ -44,10 +35,7 @@ with torch.no_grad():
     pred_h11 = torch.argmax(out_h11, dim=1).numpy()
     pred_h21 = torch.argmax(out_h21, dim=1).numpy()
 
-
-# -----------------------------
 # Plot results
-# -----------------------------
 os.makedirs("plots", exist_ok=True)
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))

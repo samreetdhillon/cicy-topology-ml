@@ -11,30 +11,21 @@ import torch
 import numpy as np
 from src.models.cnn_model import CICYClassifier
 
-
-# -----------------------------
 # Load data
-# -----------------------------
 X_enhanced = np.load("data/processed/X_enhanced.npy").astype(np.float32)
 y_actual = np.load("data/processed/y_hodge.npy").astype(np.int64)
 
 X_img = X_enhanced[:, :180].reshape(-1, 1, 12, 15)
 X_scalar = X_enhanced[:, 180:]
 
-
-# -----------------------------
 # Load model
-# -----------------------------
 model = CICYClassifier()
 model.load_state_dict(
     torch.load("models/cicy_cnn_v1.pt", map_location="cpu")
 )
 model.eval()
 
-
-# -----------------------------
 # Inference
-# -----------------------------
 with torch.no_grad():
     img_tensor = torch.from_numpy(X_img)
     scalar_tensor = torch.from_numpy(X_scalar)
@@ -43,9 +34,7 @@ with torch.no_grad():
     pred_h21 = torch.argmax(out_h21, dim=1).numpy()
 
 
-# -----------------------------
-# Error analysis (classification-aware)
-# -----------------------------
+# Error analysis for h^{2,1}
 true_h21 = y_actual[:, 1]
 errors = np.abs(pred_h21 - true_h21)
 

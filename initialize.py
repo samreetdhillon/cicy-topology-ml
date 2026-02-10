@@ -6,13 +6,13 @@ import os
 
 def create_structure():
     folders = [
-        'data/raw',         # Where your .txt file goes
-        'data/processed',   # For your cleaned .npy or .csv files
-        'models',           # To save your trained .pt or .h5 weights
-        'notebooks',        # For exploratory data analysis (EDA)
-        'src/preprocessing',# Scripts to turn .txt into tensors
-        'src/models',       # Your CNN/MLP architectures
-        'plots'             # For loss curves and saliency maps
+        'data/raw',             # For .txt data file
+        'data/processed',       # For cleaned .npy or .csv files
+        'models',               # To save your trained .pt or .h5 weights
+        'notebooks',            # For exploratory data analysis (EDA)
+        'src/preprocessing',    # Scripts to turn .txt into tensors
+        'src/models',           # CNN/MLP architectures
+        'plots'                 # For loss curves and saliency maps
     ]
     
     files = {

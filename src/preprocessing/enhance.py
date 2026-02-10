@@ -1,9 +1,6 @@
 """
-Enhance the dataset by adding scalar geometric features
-derived from the CICY configuration matrix.
-
-Currently added feature:
-- Ambient factor count (number of non-zero rows)
+Enhance the dataset by adding scalar geometric features derived from the CICY configuration matrix.
+Currently added feature: Ambient factor count (number of non-zero rows)
 """
 
 import numpy as np
@@ -26,14 +23,10 @@ if __name__ == "__main__":
     X = np.load(os.path.join(in_dir, "X_cicy3.npy")).astype(np.float32)
     y = np.load(os.path.join(in_dir, "y_hodge.npy"))
 
-    # -----------------------------
     # Compute scalar feature(s)
-    # -----------------------------
     ambient_factors = compute_ambient_factor_count(X).reshape(-1, 1)
 
-    # -----------------------------
     # Flatten matrix + append scalar
-    # -----------------------------
     X_flat = X.reshape(len(X), -1)
     X_enhanced = np.hstack([X_flat, ambient_factors]).astype(np.float32)
 

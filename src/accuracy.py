@@ -10,30 +10,21 @@ import torch
 import numpy as np
 from src.models.cnn_model import CICYClassifier
 
-
-# -----------------------------
 # Load data
-# -----------------------------
 X_enhanced = np.load("data/processed/X_enhanced.npy").astype(np.float32)
 y_actual = np.load("data/processed/y_hodge.npy").astype(np.int64)
 
 X_img = X_enhanced[:, :180].reshape(-1, 1, 12, 15)
 X_scalar = X_enhanced[:, 180:]
 
-
-# -----------------------------
 # Load model
-# -----------------------------
 model = CICYClassifier()
 model.load_state_dict(
     torch.load("models/cicy_cnn_v1.pt", map_location="cpu")
 )
 model.eval()
 
-
-# -----------------------------
 # Prediction
-# -----------------------------
 with torch.no_grad():
     img_tensor = torch.from_numpy(X_img)
     scalar_tensor = torch.from_numpy(X_scalar)
@@ -43,10 +34,7 @@ with torch.no_grad():
     pred_h11 = torch.argmax(out_h11, dim=1).numpy()
     pred_h21 = torch.argmax(out_h21, dim=1).numpy()
 
-
-# -----------------------------
 # Exact accuracy
-# -----------------------------
 true_h11 = y_actual[:, 0]
 true_h21 = y_actual[:, 1]
 
@@ -62,10 +50,7 @@ print(f"h^{1,1} exact accuracy     : {acc_h11:.2f}%")
 print(f"h^{2,1} exact accuracy     : {acc_h21:.2f}%")
 print("-" * 40)
 
-
-# -----------------------------
-# Interpretation (report-friendly)
-# -----------------------------
+# Interpretation
 if acc_h11 > 90:
     print("STATUS: h^{1,1} prediction is highly reliable.")
 if acc_h21 > 50:

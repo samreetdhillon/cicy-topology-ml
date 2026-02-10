@@ -5,7 +5,6 @@ Reports label ranges and cardinalities.
 
 import numpy as np
 
-
 y = np.load("data/processed/y_hodge.npy").astype(np.int64)
 
 h11 = y[:, 0]
