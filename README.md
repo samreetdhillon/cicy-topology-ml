@@ -2,6 +2,8 @@
 
 A PyTorch project for predicting topological quantities (Hodge numbers) from CICY (Complete Intersection Calabi-Yau) dataset representations using a convolutional neural network.
 
+Full Project Report is available [here]()
+
 ## Contents
 
 - `src/` — training and model code
@@ -48,6 +50,31 @@ A PyTorch project for predicting topological quantities (Hodge numbers) from CIC
    ```powershell
    python src\train_enhanced.py
    ```
+
+## Notebooks
+
+Interactive Jupyter notebooks for exploring, training, and evaluating the model:
+
+- **`notebooks/01_EDA.ipynb`** — Exploratory Data Analysis
+  - Load and inspect dataset shapes and properties
+  - Visualize Hodge number distributions
+  - Analyze feature correlations
+  - Sample CICY matrix visualization
+
+- **`notebooks/02_Model_Training.ipynb`** — Model Training
+  - Configure training hyperparameters
+  - Prepare data and create DataLoaders
+  - Train the CNN model with loss tracking
+  - Plot training history (loss curves and accuracy)
+  - Save trained model weights
+
+- **`notebooks/03_Evaluation.ipynb`** — Model Evaluation
+  - Load trained model and run inference
+  - Compute accuracy metrics
+  - Scatter plots of predictions vs actuals
+  - Confusion matrices for both Hodge numbers
+  - Per-class accuracy and error analysis
+  - Confidence analysis and prediction sampling
 
 ## Project structure
 
