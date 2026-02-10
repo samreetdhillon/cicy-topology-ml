@@ -2,7 +2,7 @@
 
 A PyTorch project for predicting topological quantities (Hodge numbers) from CICY (Complete Intersection Calabi-Yau) dataset representations using a convolutional neural network.
 
-Full Project Report is available [here]()
+Full Project Report is available [here](https://drive.google.com/file/d/1j_c86LW9nIFBR1BVDKVILqti1rUnrrhu/view?usp=sharing).
 
 ## Contents
 
