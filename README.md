@@ -9,7 +9,6 @@ Full Project Report is available [here](https://drive.google.com/file/d/1j_c86LW
 - `src/` — training and model code
 - `data/` — dataset (raw and processed)
 - `models/` — saved model weights
-- `notebooks/` — exploratory notebooks
 - `plots/` — visualization outputs
 
 ## Quickstart
