@@ -51,31 +51,6 @@ Full Project Report is available [here](https://drive.google.com/file/d/1j_c86LW
    python src\train_enhanced.py
    ```
 
-## Notebooks
-
-Interactive Jupyter notebooks for exploring, training, and evaluating the model:
-
-- **`notebooks/01_EDA.ipynb`** — Exploratory Data Analysis
-  - Load and inspect dataset shapes and properties
-  - Visualize Hodge number distributions
-  - Analyze feature correlations
-  - Sample CICY matrix visualization
-
-- **`notebooks/02_Model_Training.ipynb`** — Model Training
-  - Configure training hyperparameters
-  - Prepare data and create DataLoaders
-  - Train the CNN model with loss tracking
-  - Plot training history (loss curves and accuracy)
-  - Save trained model weights
-
-- **`notebooks/03_Evaluation.ipynb`** — Model Evaluation
-  - Load trained model and run inference
-  - Compute accuracy metrics
-  - Scatter plots of predictions vs actuals
-  - Confusion matrices for both Hodge numbers
-  - Per-class accuracy and error analysis
-  - Confidence analysis and prediction sampling
-
 ## Project structure
 
 - `src/preprocessing/parser.py` — parses raw CICY 3-fold data from text into NumPy arrays

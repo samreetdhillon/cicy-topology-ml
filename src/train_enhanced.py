@@ -69,7 +69,6 @@ for epoch in range(EPOCHS):
         loss_h11 = criterion(out_h11, batch_y[:, 0])
         loss_h21 = criterion(out_h21, batch_y[:, 1])
 
-        # loss = loss_h11 + loss_h21
         loss = loss_h11 + (LAMBDA_H21 * loss_h21)
         loss.backward()
         optimizer.step()
